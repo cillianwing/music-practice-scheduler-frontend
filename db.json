@@ -1,0 +1,12 @@
+{
+	"schedules": [
+		{
+			"id": 1,
+			"title": "Test Schedule 1",
+			"practiceDays": ["Monday", "Wednesday", "Thursday"],
+			"practiceTime": 90,
+			"instrument": "Guitar",
+			"practiceAreas": ["Theory/Ear Training", "Technique", "Improv"]
+		}
+	]
+}
