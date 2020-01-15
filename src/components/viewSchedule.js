@@ -13,6 +13,7 @@ class ViewSchedule {
 				this.practiceTime = schedule.practiceTime
 				this.instrument = schedule.instrument
 				this.practiceAreas = schedule.practiceAreas
+				this.scheduleComponents = this.getScheduleComponents
 				this.container = document.querySelector('#view-schedule')
 			}
 
@@ -28,13 +29,18 @@ class ViewSchedule {
 
 				for (let key in dayObj) {
 				  for (let i = 0; i < time/30; i++) {
-				    let el = updatedPracticeAreas.shift()
+				  	let el = { 'sesh': '', 'complete': false }
+				    el['sesh'] = updatedPracticeAreas.shift()
 				    dayObj[key].push(el)
 				  }
 				}				
 
-				this.html(dayObj)
+				return dayObj
 			}
+
+			get renderScheduleComponents() {
+				this.html(this.scheduleComponents)
+			}			
 
 			get practiceBlocks() {
 				let daysArray = this.practiceDays.split(", ")
@@ -97,25 +103,69 @@ class ViewSchedule {
 					viewDiv += `
 						<h3 class="text-center">${key}</h3>
 						<h5 class="text-center">${this.instrument} Practice</h5>
-						<div class="row flex-row flex-nowrap justify-content-center" style="overflow-x: auto">`
-					obj[key].forEach( area => {
-						viewDiv += `
-							<div class="col-3">
-								<div class="card card-block">
-									<div class="schedule-border">
-										<img src="src/components/images/${area.split(/[ ,/]+/)[0]}.jpg" class="card-img-top">
-										<div class="card-body">
-											<h5 class="card-title text-center">${area}: 30 min.</h5>
+						<div class="row flex-row flex-nowrap pb-2 justify-content-center" style="overflow-x: auto">`
+					obj[key].forEach( (area, index) => {
+						if (!area['completed']) {
+							viewDiv += `
+								<div class="col-3">
+									<div class="card card-block">
+										<div class="schedule-border" style="background: ''">
+											<img src="src/components/images/${area['sesh'].split(/[ ,/]+/)[0]}.jpg" class="card-img-top">
+											<div class="card-body">
+												<h5 class="card-title text-center">${area['sesh']}: 30 min.</h5>
+											</div>
+											<div class="completed-button">
+												<button id="completed-button-${key.toLowerCase()}-${area['sesh']}-${index}" class="completed-button btn btn-primary btn-block">Practice Complete?</button>
+											</div>
 										</div>
 									</div>
 								</div>
-							</div>
-						`
+							`							
+						} else {
+							viewDiv += `
+								<div class="col-3">
+									<div class="card card-block">
+										<div class="schedule-border" style="background: ''">
+											<img src="src/components/images/${area['sesh'].split(/[ ,/]+/)[0]}.jpg" class="card-img-top">
+											<div class="card-body">
+												<h5 class="card-title text-center">${area['sesh']}: 30 min.</h5>
+											</div>
+											<div class="completed-button">
+												<button id="completed-button-${key.toLowerCase()}-${area['sesh']}-${index}" class="completed-button btn btn-success btn-block" disabled>Complete</button>
+											</div>
+										</div>
+									</div>
+								</div>
+							`										
+						}
 					})
 					viewDiv += `</div>`
 				}
 				this.container.innerHTML = viewDiv
+				this.container.addEventListener('click', this.updateCompletedButton.bind(this))
 			}
+
+			updateCompletedButton(e) {
+				if (e.target.classList.contains('completed-button')) {
+					const day = e.target.id.split("-")[2]
+					const session = e.target.id.split("-")[3]
+					const idx = parseInt(e.target.id.split("-")[4])
+					const parentDiv = e.target.parentElement
+
+					for (let key in this.scheduleComponents) {
+						if (key.toLowerCase() === day) {
+							this.scheduleComponents[key].forEach( (el, index) => {
+								if (el['sesh'] === session && index === idx) {
+									e.target.parentElement.innerHTML = `<button id="completed-button-${day}-${session}-${idx}" class="completed-button btn btn-success btn-block" disabled>Complete</button>`
+									el['completed'] = true
+									parentDiv.parentElement.style.background = '#f2e9aa'
+								}
+							})
+						}
+					}
+				}
+			}
+		
 		}
 	}
 
@@ -146,7 +196,7 @@ class ViewSchedule {
 	}
 
 	render() {
-		this.schedule.getScheduleComponents
+		this.schedule.renderScheduleComponents
 	}
 
 }
